@@ -1,12 +1,14 @@
 import asyncio
-import discord
 import uvicorn
+import discord
+
 from discord.ext import commands
 from fastapi import FastAPI
 from adapters.openai import client
-from settings import DISCORD_BOT_PUBLIC_KEY
+from settings import DISCORD_BOT_TOKEN
 
 intents = discord.Intents.default()
+intents.message_content = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
@@ -22,7 +24,7 @@ async def ask(ctx, *, question: str):
 
     try:
         response = client.chat.completions.create(
-            model="o1", messages=[{"role": "developer", "content": question}]
+            model="chatgpt-4o-latest", messages=[{"role": "developer", "content": question}]
         )
 
         answer = response.choices[0].message.content
@@ -41,11 +43,11 @@ async def root():
 
 
 async def run_discord_bot():
-    await bot.start(DISCORD_BOT_PUBLIC_KEY)
+    await bot.start(DISCORD_BOT_TOKEN)
 
 
 async def run_fastapi():
-    config = uvicorn.Config(app, host="0.0.0.0", port=8000, log_level="info")
+    config = uvicorn.Config(app, host="0.0.0.0", port=8765, log_level="info")
     server = uvicorn.Server(config)
     await server.serve()
 
